@@ -1,18 +1,8 @@
-/*
-  SparkFun Inventor’s Kit
-  Circuit 5C - Autonomous Robot
 
-  This robot will drive around on its own and react to obstacles by backing up and turning to a new direction.
-  This sketch was adapted from one of the activities in the SparkFun Guide to Arduino.
-  Check out the rest of the book at
-  https://www.sparkfun.com/products/14326
+#include "pitches.h" //add Equivalent frequency for musical note
 
-  This sketch was written by SparkFun Electronics, with lots of help from the Arduino community.
-  This code is completely free for any use.
+#include "themes.h" //add Note vale and duration 
 
-  View circuit diagram and instructions at: https://learn.sparkfun.com/tutorials/sparkfun-inventors-kit-experiment-guide---v41
-  Download drawings and code at: https://github.com/sparkfun/SIK-Guide-Code
-*/
 
 
 
@@ -32,6 +22,7 @@ const int trigPin = 6;
 const int echoPin = 5;
 
 int switchPin = 7;             //switch to turn the robot on and off
+int speakerPin = 3;               //the pin that buzzer is connected to
 
 float distance = 0;            //variable to store the distance measured by the distance sensor
 
@@ -71,34 +62,38 @@ void loop()
   Serial.print(distance);
   Serial.println(" in");              // print the units
 
+  moving(distance);
+}
+void moving(float distance){
+  
   if (digitalRead(switchPin) == LOW) { //if the on switch is flipped
 
     if (distance < 10) {              //if an object is detected
       //back up and turn
       Serial.print(" ");
       Serial.print("BACK!");
-
+     tone(speakerPin, 1000, 500);
       //stop for a moment
       rightMotor(0);
       leftMotor(0);
       delay(200);
-
+      Play_Pirates();
       //back up
-      rightMotor(-255);
-      leftMotor(-255);
+      rightMotor(255);
+      leftMotor(255);
       delay(backupTime);
 
       //turn away from obstacle
       rightMotor(255);
-      leftMotor(-255);
+      leftMotor(255);
       delay(turnTime);
 
     } else {                        //if no obstacle is detected drive forward
       Serial.print(" ");
       Serial.print("Moving...");
+      Play_CrazyFrog();
 
-
-      rightMotor(255);
+      rightMotor(-255);
       leftMotor(255);
     }
   } else {                        //if the switch is off then stop
@@ -171,4 +166,46 @@ float getDistance()
   calculatedDistance = echoTime / 148.0;  //calculate the distance of the object that reflected the pulse (half the bounce time multiplied by the speed of sound)
 
   return calculatedDistance;              //send back the distance that was calculated
+}
+void Play_CrazyFrog()
+
+{
+
+  for (int thisNote = 0; thisNote < (sizeof(CrazyFrog_note)/sizeof(int)); thisNote++) {
+
+
+    int noteDuration = 1000 / CrazyFrog_duration[thisNote]; //convert duration to time delay
+
+    tone(3, CrazyFrog_note[thisNote], noteDuration);
+
+
+    int pauseBetweenNotes = noteDuration * 1.30;//Here 1.30 is tempo, decrease to play it faster
+
+    delay(pauseBetweenNotes);
+
+    noTone(3); //stop music on pin 8 
+
+    }
+
+}
+void Play_Pirates()
+
+{ 
+
+  for (int thisNote = 0; thisNote < (sizeof(Pirates_note)/sizeof(int)); thisNote++) {
+
+    
+    int noteDuration = 1000 / Pirates_duration[thisNote];//convert duration to time delay
+
+    tone(3, Pirates_note[thisNote], noteDuration);
+    moving(distance);
+
+    int pauseBetweenNotes = noteDuration * 1.05; //Here 1.05 is tempo, increase to play it slower
+
+    delay(pauseBetweenNotes);
+
+    noTone(3); //stop music on pin 8 
+
+    }
+
 }
